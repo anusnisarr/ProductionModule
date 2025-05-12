@@ -22,6 +22,7 @@ function App() {
           <Route path="/Items/Edit/:itemId" element={<CreateOrEditItem />} />
           <Route path="/Recipe" element={<Recipe />} />
           <Route path="/Recipe/Create" element={<CreateOrEditRecipe />} />
+          <Route path="/Recipe/Edit/:recipeCode" element={<CreateOrEditRecipe />} />
           <Route path="/Demand" element={<DemandList />} />
           <Route path="/Demand/Create" element={<CreateDemand />} />
           <Route path="/ProductionPlanning" element={<ProductionPlanning />} />

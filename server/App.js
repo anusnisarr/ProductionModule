@@ -47,8 +47,9 @@ app.get("/Setup" , (req , res)=>{
 })
 
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("✅ Database Connected"))
-    .catch(err => console.error("❌ Database Error", err));
+  .then(() => console.log("✅ Database Connected"))
+  .catch(err => console.error("❌ Database Error", err));
+  
 
 app.listen(process.env.PORT , (req , res)=>{
     console.log("working...");

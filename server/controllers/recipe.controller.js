@@ -97,13 +97,21 @@ const editRecipe = async (req, res) => {
     try {
         const { recipeName } = req.body;
         const { recipeCode } = req.params;
-        const { recipeColor } = req.body;
-        const { recipeStatus } = req.body;
+        const { Status } = req.body;
+        const { ingredients } = req.body;
+        const { recipeType } = req.body;
+        const { recipeCost } = req.body;
+        const { description } = req.body;
+        const { recipeId } = req.body;
+
+        console.log(req.body);
+        
+
         
         const updatedrecipe = await Recipe.findOneAndUpdate(
             { recipeCode: recipeCode }, // Find Recipe by code
-            { recipeName: recipeName , recipeColor: recipeColor , IsActive : recipeStatus === "Active" ? true : false
-             }, // Update with new data
+            { recipeName: recipeName , ingredients: ingredients , IsActive : Status === "Active" ? true : false,
+            recipeType:recipeType,recipeCost:recipeCost,description:description,recipeId:recipeId}, // Update with new data
             { new: true } // Return updated document
         );
         

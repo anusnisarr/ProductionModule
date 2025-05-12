@@ -207,7 +207,7 @@ const Recipe = () => {
                                     <td>
                                        <div className="table-actions">
                                             <Link
-                                                // to={`/Items/Edit/${item.itemId}`}
+                                                to={`/Recipe/Edit/${recipe.recipeCode}`}
                                                 className="btn-icon"
                                                 title="Edit"
                                             >

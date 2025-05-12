@@ -146,10 +146,77 @@ const ProductionPlanning = () => {
     }
     return acc;
   }, []);
+
+  const semiFinishDemand = demandData
+  .flatMap(demand => demand.items.filter(i => i.itemType === "FinishedGoods")).map(item => {
+    const matchedRecipe = recipeData.find(recipe => recipe.recipeCode === item.itemCode);
+    if (matchedRecipe) {
+      const updatedIngredients = matchedRecipe.ingredients.map(ingredient => ({
+        ...ingredient,
+        requiredQty: ingredient.quantity * item.quantity,
+      }));
+      return updatedIngredients.filter(i => i.itemType === "SemiFinished").map(i => ({
+        ...i,
+        itemName: i.itemName,
+        quantity: i.requiredQty
+           }));
+    }
+    return [];
+  })
+  .flat()
+  .reduce((acc, item) => {
+    const existingItem = acc.find(i => i.itemCode === item.itemCode);
+    if (existingItem) {
+      existingItem.quantity += item.quantity;
+    } else {
+      acc.push({ ...item }); // Make a copy to avoid mutation
+    }
+    return acc;
+  }, []);
   
-  console.log(finishGoodsDemand);
-
-
+  
+  function getAllRawMaterials(recipeCode, multiplier = 1) {
+    const recipe = recipeData.find(r => r.recipeCode === recipeCode);
+    if (!recipe) return [];
+  
+    let materials = [];
+  
+    for (const ingredient of recipe.ingredients) {
+      const totalQty = ingredient.quantity * multiplier;
+  
+      if (ingredient.itemType === "RawMaterial") {
+        materials.push({
+          ...ingredient,
+          quantity: totalQty
+        });
+      } else if (ingredient.itemType === "SemiFinished" || ingredient.itemType === "SemiFinishedSemiFinished") {
+        // If it's a semi-finished, go deeper
+        const nestedMaterials = getAllRawMaterials(ingredient.itemCode, totalQty);
+        materials = materials.concat(nestedMaterials);
+      }
+    }
+  
+    return materials;
+  }
+  
+  // Now process all FinishedGoods in demandData
+  const rawMaterialRequirements = demandData
+    .flatMap(demand => 
+      demand.items
+        .filter(item => item.itemType === "FinishedGoods")
+        .flatMap(item => getAllRawMaterials(item.itemCode, item.quantity))
+    )
+    .reduce((acc, item) => {
+      const existing = acc.find(i => i.itemCode === item.itemCode);
+      if (existing) {
+        existing.quantity += item.quantity;
+      } else {
+        acc.push({ ...item });
+      }
+      return acc;
+    }, []);
+  
+console.log("rawMaterialRequirements:", finishGoodsDemand);
 
 
   // const calculateTotalShortage = (type) => {
@@ -197,8 +264,8 @@ const ProductionPlanning = () => {
             <FontAwesomeIcon icon={faBoxes} />
           </div>
           <div className="card-content">
-            <h3>Total Demand</h3>
-            <p>{demandData.reduce((sum, item) => sum + item.totalQuantity, 0)} units</p>
+            <h3>Total Finish Goods</h3>
+            <p>{finishGoodsDemand.reduce((sum, item) => sum + item.quantity, 0)} units</p>
           </div>
         </div>
         
@@ -208,7 +275,7 @@ const ProductionPlanning = () => {
           </div>
           <div className="card-content">
             <h3>Semi-Finished Needed</h3>
-            <p>{finishGoodsDemand.reduce((sum, item) => sum + item.quantity, 0)} units</p>
+            <p>{semiFinishDemand.reduce((sum, item) => sum + item.quantity, 0)} units</p>
           </div>
         </div>
 
@@ -218,7 +285,7 @@ const ProductionPlanning = () => {
           </div>
           <div className="card-content">
             <h3>Raw Material Needed</h3>
-            {/* <p>{rawMaterialGoodsDemand.reduce((sum, item) => sum + item.quantity, 0)} units</p> */}
+            <p>{rawMaterialRequirements.reduce((sum, item) => sum + item.quantity, 0)} units</p>
           </div>
         </div>
       </div>
@@ -241,7 +308,7 @@ const ProductionPlanning = () => {
               <div className="summary-section">
                 <h4>Raw Materials</h4>
                   {/* This would be dynamically generated from aggregated data */}
-                  {demandData.flatMap(item => item.items.filter(subItem => subItem.itemType === "RawMaterial")).map((item) => (
+                  {rawMaterialRequirements.map((item) => (
                 <div className="summary-items" key={item.itemCode}>
                   <div className="summary-item">
                     <div className="item-name">{item.itemName}</div>
@@ -253,7 +320,7 @@ const ProductionPlanning = () => {
               
               <div className="summary-section">
                 <h4>Finished Materials</h4>
-                  {finishGoodsDemand.map((item) => (
+                  {semiFinishDemand.map((item) => (
                 <div className="summary-items">
                   <div className="summary-item">
                     <div className="item-name">{item.itemName}</div>
@@ -328,13 +395,13 @@ const ProductionPlanning = () => {
                           .map((ingredient, idx) => (
                             <div className="semi-finished-item" key={`semi-${idx}`}>
                               <div 
-                                className={expandedSemiFinished?`semi-finished-header`:"semi-finished-header-nonClickable"}
                                 onClick={() => toggleSemiFinishedExpand(ingredient.itemCode , ingredient.quantity * item.quantity)}
+                                className={`semi-finished-header`}
                               >
                                 
                                 <div className="sf-name">
                                   <FontAwesomeIcon 
-                                    icon={expandedSemiFinished?.recipeCode === ingredient.itemCode ? faChevronDown : faChevronRight} 
+                                    icon={expandedSemiFinished === ingredient.itemCode ? faChevronDown : faChevronRight} 
                                     className="sf-chevron"
                                   />
                                 

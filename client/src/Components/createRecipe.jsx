@@ -21,7 +21,7 @@ const RecipeForm = () => {
   const [mainRecipeError, setMainRecipeError] = useState("");
   const [recipeItemError, setRecipeItemError] = useState("");
 
-
+  const isEditMode = window.location.href.includes("Edit");
 
   const [recipe, setRecipe] = useState({
     recipeName: "",
@@ -39,14 +39,55 @@ const RecipeForm = () => {
     itemCode: "",
     itemName: "",
     itemType: "",
-    quantity: 0,
+    quantity: 1,
     rate: 0,
     wastage: 0,
     unit: "g",
     totalAmount: 0,
   });
 
+  useEffect(() => {
+    const fetchRecipeDetails = async () => {
+      const recipeId = window.location.href.split("/").pop();
+      try {
+        const response = await fetch(`http://localhost:3000/recipe/api/recipe/${recipeId}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch recipe details");
+        }
+        const recipeData = await response.json();
+        setRecipe({
+          recipeName: recipeData.recipeName,
+          recipeCode: recipeData.recipeCode,
+          recipeId: recipeData.recipeId,
+          description: recipeData.description,
+          recipeType: recipeData.recipeType,
+          recipeCost: recipeData.recipeCost,
+          Status: recipeData.Status,
+          ingredients: recipeData.ingredients.map((item) => ({
+            itemId: item.itemId,
+            itemCode: item.itemCode,
+            itemName: item.itemName,
+            itemType: item.itemType,
+            quantity: item.quantity,
+            rate: item.rate,
+            wastage: item.wastage,
+            unit: item.unit,
+            totalAmount: item.totalAmount,
+          })),
+        });
+      } catch (error) {
+        console.error("Error fetching recipe details:", error);
+        alert("Error fetching recipe details: " + error.message);
+      }
+    };
+    if (isEditMode) {
+      fetchRecipeDetails();
+    }
+  }, []);
+
   useEffect(() => {  
+    if (isEditMode) return;
+
     const checkIsRecipeExists = async () => {
       try {
         const response = await fetch(`http://localhost:3000/recipe/api/recipe/${recipe.recipeCode}`);
@@ -167,16 +208,22 @@ const RecipeForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!recipe.recipeCode) return setError("Please select a recipe first.");
-
+    
+    if (recipe.ingredients.length === 0) return setRecipeItemError("Please add at least one recipe item.");
+    if (!recipe.recipeCode) return setMainRecipeError("Please select a recipe first.");
+    
     console.log("Recipe submitted:", recipe);
-    // Submit logic here
     try {
-      const response = await fetch("http://localhost:3000/recipe/Create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recipe }),
+      const url = isEditMode ? `http://localhost:3000/recipe/Edit/${recipe.recipeCode}` 
+      : "http://localhost:3000/recipe/Create";
+      const method = isEditMode ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+      method: method,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(recipe)
       });
 
       if (!response.ok) {
@@ -185,7 +232,7 @@ const RecipeForm = () => {
       }
       const result = await response.json();
       console.log(result);
-      window.location.href = "/recipe";
+      // window.location.href = "/recipe";
     } catch (error) {
       console.error("Error:", error.message);
       alert("Error: " + error.message);

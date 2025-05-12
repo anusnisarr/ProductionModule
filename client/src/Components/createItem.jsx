@@ -4,10 +4,6 @@ import Choices from "choices.js";
 import 'choices.js/public/assets/styles/choices.min.css';
 import { useParams } from 'react-router-dom';
  
-
-
-
-
 const CreateOrEditItem = () => {
   const itemId  = useParams();
   const [activeCategories, setActiveCategories] = useState([]);
