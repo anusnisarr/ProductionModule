@@ -10,27 +10,14 @@ import {
 import "../StyleSheets/RecipeForm.css";
 import ItemSelect from "../Components/itemSelect.jsx";
 import { useForm } from "react-hook-form";
-<<<<<<< HEAD
-
-
-
-
-const RecipeForm = () => {
-
-=======
 import { useNavigate } from 'react-router-dom';
 
 const RecipeForm = () => {
->>>>>>> master
   // const { register, handleSubmit, watch, formState: { errors } } = useForm();
   // const onSubmit = data => console.log(data);
   const [mainRecipeError, setMainRecipeError] = useState("");
   const [recipeItemError, setRecipeItemError] = useState("");
-<<<<<<< HEAD
-
-=======
   const navigate = useNavigate();
->>>>>>> master
   const isEditMode = window.location.href.includes("Edit");
 
   const [recipe, setRecipe] = useState({
@@ -157,10 +144,7 @@ const RecipeForm = () => {
 
   const handleAddItem = () => {
     if (!currentItem.itemCode) return;
-<<<<<<< HEAD
-=======
     if (recipeItemError) return;
->>>>>>> master
 
     const totalAmount = Number(
       (
@@ -216,11 +200,6 @@ const RecipeForm = () => {
       ...prev,
       ingredients: prev.ingredients.filter((_, i) => i !== index),
     }));
-<<<<<<< HEAD
-
-    
-=======
->>>>>>> master
   };
 
   const handleSubmit = async (e) => {
@@ -249,11 +228,7 @@ const RecipeForm = () => {
       }
       const result = await response.json();
       console.log(result);
-<<<<<<< HEAD
-      // window.location.href = "/recipe";
-=======
       navigate("/recipe");
->>>>>>> master
     } catch (error) {
       console.error("Error:", error.message);
       alert("Error: " + error.message);
@@ -401,11 +376,7 @@ const RecipeForm = () => {
               type="button"
               className="btn-add-item"
               onClick={handleAddItem}
-<<<<<<< HEAD
-              disabled={!currentItem.itemCode}
-=======
               disabled={!currentItem.itemCode || recipeItemError}
->>>>>>> master
             >
               <FontAwesomeIcon icon={faPlus} /> Add Item
             </button>

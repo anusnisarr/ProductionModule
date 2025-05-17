@@ -16,28 +16,16 @@ import '../StyleSheets/Navigation.css';
 
 const Navigation = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-<<<<<<< HEAD
-  const [activeItem, setActiveItem] = useState('Home');
-  const [scrolled, setScrolled] = useState(false);
-
-  const menuItems = [
-    { title: 'Item List', icon: faList, link: '/' },
-=======
   const [activeItem, setActiveItem] = useState('');
   const [scrolled, setScrolled] = useState(false);
 
   const menuItems = [
     { title: 'Item List', icon: faList, link: '/Items' },
     { title: 'Category List', icon: faUtensils, link: '/Categories' },
->>>>>>> master
     { title: 'Recipe list', icon: faUtensils, link: '/recipe' },
     { title: 'Demand Orders', icon: faUtensils, link: '/Demand' },
     { title: 'Production Planning', icon: faUtensils, link: '/ProductionPlanning' }
 
-<<<<<<< HEAD
-=======
-
->>>>>>> master
   ];
 
   useEffect(() => {

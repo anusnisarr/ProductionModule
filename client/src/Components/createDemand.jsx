@@ -3,22 +3,15 @@ import React, { useEffect, useState } from 'react';
 import '../StyleSheets/DemandList.css'; // Adjust the path as necessary
 import { X } from 'lucide-react'; // You can use an icon library like lucide-react for better UI
 import MySelect from './itemSelect.jsx'; // Assuming you have a custom select component
-<<<<<<< HEAD
-=======
 import { useNavigate } from 'react-router-dom';
->>>>>>> master
 
 
 const AddDemand = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [demandCount, setDemandCount] = useState('');
-<<<<<<< HEAD
-  const [demandNo, setNDemandNo] = useState(''); // State to hold the new demand number
-=======
   const [demandNo, setNDemandNo] = useState(''); // State to hold the new demand numberconst navigate = useNavigate();
   const navigate = useNavigate();
 
->>>>>>> master
 
   const createDemandNo = () => {
     const year = new Date().getFullYear().toString().slice(-2); // Extracts the last two digits of the year (YY)
@@ -124,11 +117,7 @@ const AddDemand = () => {
          if (response.ok) {
           const data = await response.json();
           console.log('Success:', data);
-<<<<<<< HEAD
-          location.href = '/demand';
-=======
           navigate('/demand');
->>>>>>> master
         }
         else {
           const errorData = await response.json();

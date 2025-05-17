@@ -62,10 +62,6 @@
 .search-bar input:focus {
     outline: none;
     border-color: var(--primary);
-<<<<<<< HEAD
-    box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.3);
-=======
->>>>>>> master
 }
 
 .search-icon {
