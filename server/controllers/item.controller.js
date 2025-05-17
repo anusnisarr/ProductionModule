@@ -2,10 +2,7 @@ import { uploadFileToCloudinary } from "../utils/cloudinaryUpload.js";
 import Item from "../models/item.models.js";
 import dotenv from "dotenv";
 import fs from "fs";
-<<<<<<< HEAD
-=======
 import XLSX from 'xlsx';
->>>>>>> master
 dotenv.config();
 let itemIdAssign = null;
 
@@ -114,9 +111,6 @@ const createNewItem = async (req, res) => {
         }
     }
    
-<<<<<<< HEAD
- };
-=======
 };
 
 //  UPLOAD ITEM THROUGH EXCEL FILE IMPORT 
@@ -178,7 +172,6 @@ const uploadFile = async (req, res) => {
 
   }
 };
->>>>>>> master
 
  //UPDATE CATEGORY IN DATABASE WHEN CLICK ON SAVE BUTTON
  const editCategory = async (req, res) => {            
@@ -249,11 +242,7 @@ const uploadFile = async (req, res) => {
      catch (error) {
         return res.status(500).json({ error: "Server error" });
      }
-<<<<<<< HEAD
- };
-=======
 };
->>>>>>> master
 
  const deleteCategory = async (req , res) => {
     try {
@@ -268,12 +257,6 @@ const uploadFile = async (req, res) => {
     } catch (error) {
         console.error("Error: " , error || "Server Error")
     }
-<<<<<<< HEAD
- }
- 
-export { createNewItem, getAllItems, getItemById, editCategory, deleteCategory };
-=======
 }
  
 export {uploadFile, createNewItem, getAllItems, getItemById, editCategory, deleteCategory };
->>>>>>> master
