@@ -1,5 +1,5 @@
 
-import Recipe from "../models/Recipe.models.js"; // Assuming you have a Recipe model
+import Recipe from "../models/recipe.models.js"; // Assuming you have a Recipe model
 
 let recipeId = null
 
