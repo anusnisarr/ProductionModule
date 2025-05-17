@@ -1,0 +1,13 @@
+
+/* CSS Reset */
+body, html {
+  margin: 0;
+  padding: 0;
+  display: block; /* This is actually the default, no need to specify */
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
