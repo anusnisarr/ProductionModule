@@ -17,6 +17,7 @@
     "@tailwindcss/cli": "^4.1.4",
     "@tailwindcss/vite": "^4.1.4",
     "choices.js": "^11.1.0",
+    "cloudinary": "^2.6.1",
     "concurrently": "^9.1.2",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
