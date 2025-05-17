@@ -32,11 +32,7 @@ router.get("/Edit/:categoryCode", (req , res) => {
 router.get("/api/categories/:categoryId", getCategoryById);
 
 // ROUTE TO HANDLE API CALL TO UPDATE NEW CATEGORY
-<<<<<<< HEAD
-router.put("/Edit/:categoryCode", editCategory)
-=======
 router.put("/Edit/:categoryId", editCategory)
->>>>>>> master
 
 // ROUTE TO HANDLE API CALL TO GET EDITED CATEGORY DATA BY PARAMS CODE
 router.delete("/api/categories/delete/:categoryCode", deleteCategory);
