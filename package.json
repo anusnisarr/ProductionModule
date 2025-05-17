@@ -21,8 +21,11 @@
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "link": "^2.1.1",
     "lucide-react": "^0.507.0",
     "mongoose": "^8.14.2",
+    "multer": "^1.4.5-lts.2",
+    "nodemon": "^3.1.10",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.56.1",
@@ -31,7 +34,8 @@
     "react-select": "^5.10.1",
     "sweetalert2": "^11.21.1",
     "sweetalert2-react-content": "^5.1.0",
-    "tailwindcss": "^4.1.4"
+    "tailwindcss": "^4.1.4",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
