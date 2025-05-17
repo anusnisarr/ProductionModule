@@ -3,9 +3,18 @@ import "../StyleSheets/createItem.css";
 import Choices from "choices.js";
 import 'choices.js/public/assets/styles/choices.min.css';
 import { useParams } from 'react-router-dom';
+<<<<<<< HEAD
  
 const CreateOrEditItem = () => {
   const itemId  = useParams();
+=======
+import { useNavigate } from 'react-router-dom';
+ 
+const CreateOrEditItem = () => {
+  const itemId  = useParams();
+  const navigate = useNavigate();
+
+>>>>>>> master
   const [activeCategories, setActiveCategories] = useState([]);
   const [selectedCategoryCode, setSelectedCategoryCode] = useState("");
   const [selectedCategoryName, setSelectedCategoryName] = useState("");
@@ -20,8 +29,11 @@ const CreateOrEditItem = () => {
   const isEditMode = window.location.href.includes("Edit");
 
 
+<<<<<<< HEAD
   
 
+=======
+>>>>>>> master
   useEffect(() => {
     if(!isEditMode) {
       fetchCategoriesForItem();
@@ -42,6 +54,11 @@ const CreateOrEditItem = () => {
       const activeCategories = categoriesJSON.filter(
         (category) => category.IsActive === true
       );
+<<<<<<< HEAD
+=======
+
+      console.log(activeCategories)
+>>>>>>> master
       setActiveCategories(activeCategories);
       populateCategories(activeCategories);
     } catch (error) {
@@ -49,7 +66,11 @@ const CreateOrEditItem = () => {
     }
   };
 
+<<<<<<< HEAD
   const populateCategories = (categories) => {
+=======
+  const populateCategories = (categories) => {    
+>>>>>>> master
     const choicesArray = categories.map((category) => ({
       value: category.categoryCode,
       label: category.categoryName,
@@ -85,6 +106,10 @@ const CreateOrEditItem = () => {
       const item = await itemRes.json();
       
       const categories = await categoryRes.json();
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
   
       setItemData({
         itemName: item.itemName,
@@ -96,6 +121,11 @@ const CreateOrEditItem = () => {
   
       setSelectedCategoryCode(item.categoryCode);
       setSelectedCategoryName(item.categoryName);
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> master
   
       populateCategoriesWithSelection(categories, item.categoryCode);
   
@@ -105,11 +135,17 @@ const CreateOrEditItem = () => {
   };
 
   const populateCategoriesWithSelection = (categories, selectedCode) => {
+<<<<<<< HEAD
+=======
+    if (!selectRef.current) return;
+  
+>>>>>>> master
     const choicesArray = categories.map((category) => ({
       value: category.categoryCode,
       label: category.categoryName,
       selected: category.categoryCode === selectedCode,
     }));
+<<<<<<< HEAD
 
     if (selectRef.current) {
       if (!selectRef.current.choicesInstance) {
@@ -132,6 +168,27 @@ const CreateOrEditItem = () => {
     }
   };
 
+=======
+  
+    // Initialize Choices instance if not already
+    if (!selectRef.current.choicesInstance) {
+      selectRef.current.choicesInstance = new Choices(selectRef.current, {
+        removeItemButton: true,
+        searchEnabled: true,
+        placeholder: true,
+        shouldSort: false,
+      });
+    } else {
+      // Clear previous choices & selection to avoid duplicates
+      selectRef.current.choicesInstance.clearChoices();
+      selectRef.current.choicesInstance.clearStore();
+    }
+  
+    // Set new choices (replace existing, so no duplicates)
+    selectRef.current.choicesInstance.setChoices(choicesArray, "value", "label", false);
+  };
+  
+>>>>>>> master
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setItemData((prevData) => ({ ...prevData, [name]: value }));
@@ -191,7 +248,11 @@ const CreateOrEditItem = () => {
 
       const result = await response.json();
       console.log(result);
+<<<<<<< HEAD
       window.location.href = "/";
+=======
+      navigate("/items");
+>>>>>>> master
       
     } catch (error) {
       console.error("Error:", error.message);

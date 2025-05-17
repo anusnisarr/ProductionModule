@@ -1,44 +1,40 @@
 import React, { useEffect, useState } from "react";
-import "../StyleSheets/Items.css";
+import "../StyleSheets/Category.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTrash, faEdit, faUpload, faTimes, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { Link } from 'react-router-dom';
 
-const Items = () => {
-    const [itemsArray, setItemsArray] = useState([]);
+const Categories = () => {
+    const [CategoriesArray, setCategoriesArray] = useState([]);
     const [categoriesData, setCategoriesData] = useState([]);
     const [importModalVisible, setImportModalVisible] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [isLoading, setIsLoading] = useState(true);
-    const MySwal = withReactContent(Swal);
-    
 
     useEffect(() => {
-        fetchItems();
+        fetchCategories();
     }, []);
 
+    // const fetchCategories = async () => {
+    //     try {
+    //         const response = await fetch("http://localhost:3000/categories/api/categories");
+    //         if (!response.ok) throw new Error("Network response was not ok");
+    //         setCategoriesData(await response.json());
+    //     } catch (error) {
+    //         console.error("❌ Fetch error:", error);
+    //     }
+    // };
+
     const fetchCategories = async () => {
+        setIsLoading(true);
         try {
             const response = await fetch("http://localhost:3000/categories/api/categories");
             if (!response.ok) throw new Error("Network response was not ok");
-            setCategoriesData(await response.json());
-        } catch (error) {
-            console.error("❌ Fetch error:", error);
-        }
-    };
-
-    const fetchItems = async () => {
-        setIsLoading(true);
-        try {
-            const response = await fetch("http://localhost:3000/items/api");
-            if (!response.ok) throw new Error("Network response was not ok");
-            const fetchedItems = await response.json();
-            setItemsArray(fetchedItems);
-            console.log("Fetched items:", fetchedItems);
-            
-            localStorage.setItem("Items", JSON.stringify(fetchedItems));
-            await fetchCategories();
+            const fetchedCategories = await response.json();
+            setCategoriesArray(fetchedCategories);
+            console.log("Fetched Categories:", fetchedCategories);
+            localStorage.setItem("Categories", JSON.stringify(fetchedCategories));
         } catch (error) {
             console.error("❌ Fetch error:", error);
         } finally {
@@ -47,12 +43,12 @@ const Items = () => {
     };
 
     const handleDelete = async (itemCode) => {
-        if (!window.confirm("Are you sure you want to delete this item?")) return;
+        if (!window.confirm("Are you sure you want to delete this Category?")) return;
 
         try {
-            const response = await fetch(`http://localhost:3000/items/delete/${itemCode}`, { method: "DELETE" });
-            if (!response.ok) throw new Error(await response.json().message || "Cannot delete this item");
-            setItemsArray(prev => prev.filter(item => item.itemCode !== itemCode));
+            const response = await fetch(`http://localhost:3000/Categories/delete/${itemCode}`, { method: "DELETE" });
+            if (!response.ok) throw new Error(await response.json().message || "Cannot delete this Category");
+            setCategoriesArray(prev => prev.filter(Category => Category.itemCode !== itemCode));
         } catch (error) {
             console.error("Error:", error);
             alert(`Delete failed: ${error.message}`);
@@ -69,44 +65,27 @@ const Items = () => {
         try {
             const formData = new FormData();
             formData.append("file", file);
-            console.log(formData)
             
-            const response = await fetch("http://localhost:3000/items/upload", {
+            const response = await fetch("http://localhost:3000/Categories/import", {
                 method: "POST",
                 body: formData
             });
 
-            const data = await response.json(); // <-- READ THE RESPONSE BODY
-
-            if (!response.ok) throw new Error(data.message || "Unknown error occurred");
-
-            console.log("Import successful!" , response.json())
+            if (!response.ok) throw new Error(await response.text());
             
-            fetchItems();
+            alert("Import successful!");
+            fetchCategories();
             setImportModalVisible(false);
         } catch (error) {
             console.error("Import error:", error);
-            // alert(`Import failed: ${error.message}`);
-                Swal.fire({
-                    toast: true,
-                    position: 'top',
-                    icon: 'error',
-                    background: "#cd4747",
-                    color: "#ffffff",
-                    iconColor: "#ffffff", // Added icon color
-                    title: error.message,
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true,
-                });
-                  return
+            alert(`Import failed: ${error.message}`);
         } finally {
             setIsLoading(false);
         }
     };
 
-    const filteredItems = itemsArray.filter(item => 
-        Object.values(item).some(val => 
+    const filteredCategories = CategoriesArray.filter(Category => 
+        Object.values(Category).some(val => 
             String(val).toLowerCase().includes(searchTerm.toLowerCase()))
     );
     
@@ -114,13 +93,13 @@ const Items = () => {
         <div className="items-container">
       {  /* Header Section */}
                         <div className="items-header">
-                            <h2>Items</h2>
+                            <h2>Categories</h2>
                             <div className="header-actions">
                     <div className="search-bar">
                         <FontAwesomeIcon icon={faSearch} className="search-icon" />
                         <input 
                             type="text" 
-                            placeholder="Search items..." 
+                            placeholder="Search Categories..." 
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -128,9 +107,9 @@ const Items = () => {
                     <div className="action-buttons">
                         <Link 
                             className="btn-primary"
-                            to = {"/Items/Create"}
+                            to = {"/Categories/Create"}
                         >
-                            <FontAwesomeIcon icon={faPlus} /> Add Item
+                            <FontAwesomeIcon icon={faPlus} /> Add Category
                         </Link>
                         <button 
                             className="btn-secondary"
@@ -147,7 +126,7 @@ const Items = () => {
                 <div className="modal-overlay">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h3>Import Items</h3>
+                            <h3>Import Categories</h3>
                             <button 
                                 className="close-btn"
                                 onClick={() => {
@@ -194,50 +173,38 @@ const Items = () => {
                 </div>
             )}
 
-            {/* Items Table */}
+            {/* Categories Table */}
             <div className="table-container">
-                {filteredItems.length > 0 ? (
-                    <table className="items-table">
+                {filteredCategories.length > 0 ? (
+                    <table className="categories-table">
                         <thead>
                             <tr>
-                                <th>Item ID</th>
-                                <th>Item Name</th>
-                                <th>Item Code</th>
-                                <th>Category</th>
-                                <th>Type</th>
-                                <th>Price</th>
+                                <th>Category ID</th>
+                                <th>Category Name</th>
+                                <th>Category Code</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredItems.map(item => (
-                   
-                                
-                                <tr key={item.itemCode}>
-                                    <td>{item.itemId}</td>
+                            {filteredCategories.map(Category => (
+                                <tr key={Category.categoryCode}>
+                                    <td>{Category.categoryId}</td>
                                     <td>
-                                        <div className="item-name-cell">
-                                            {item.itemName}
+                                        <div className="category-name-cell">
+                                            {Category.categoryName}
                                         </div>
                                     </td>
-                                    <td>{item.itemCode}</td>
+                                    <td>{Category.categoryCode}</td>
                                     <td>
-                                       {item.categoryName}
-                                    </td>
-                                    <td>
-                                        {item.itemType}
-                                    </td>
-                                    <td>${item.itemPrice.toFixed(2)}</td>
-                                    <td>
-                                        <span className={`status-badge ${item.isActive ? "active" : "inactive"}`}>
-                                            {item.isActive ? "Active" : "Inactive"}
+                                        <span className={`status-badge ${Category.IsActive ? "active" : "inactive"}`}>
+                                            {Category.IsActive ? "Active" : "Inactive"}
                                         </span>
                                     </td>
                                     <td>
                                         <div className="table-actions">
                                             <Link
-                                                to={`/Items/Edit/${item.itemId}`}
+                                                to={`/Categories/Edit/${Category.categoryId}`}
                                                 className="btn-icon"
                                                 title="Edit"
                                             >
@@ -245,7 +212,7 @@ const Items = () => {
                                             </Link>
                                             <Link 
                                                 className="btn-icon danger"
-                                                onClick={() => handleDelete(item.itemCode)}
+                                                onClick={() => handleDelete(Category.categoryId)}
                                                 title="Delete"
                                             >
                                                 <FontAwesomeIcon icon={faTrash} />
@@ -259,15 +226,15 @@ const Items = () => {
                 ) : (
                     <div className="empty-state">
                         {isLoading ? (
-                            <p>Loading items...</p>
+                            <p>Loading Categories...</p>
                         ) : (
                             <>
-                                <p>No items found</p>
+                                <p>No Categories found</p>
                                 <button 
                                     className="btn-primary"
-                                    onClick={() => window.location.href = "/Items/Create"}
+                                    onClick={() => window.location.href = "/Categories/Create"}
                                 >
-                                    <FontAwesomeIcon icon={faPlus} /> Add Your First Item
+                                    <FontAwesomeIcon icon={faPlus} /> Add Your First Category
                                 </button>
                             </>
                         )}
@@ -278,4 +245,4 @@ const Items = () => {
     );
 };
 
-export default Items;
+export default Categories;

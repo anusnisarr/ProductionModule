@@ -32,9 +32,18 @@ const getAllCategories = async (req, res) => {
 
 //CREATE CATEGORY IN DATABASE WHEN CLICK ON SAVE BUTTON
 const createCategory = async (req, res) => {
+<<<<<<< HEAD
     
     try {
         const { categoryName, categoryCode , categoryColor , categoryStatus} = req.body;
+=======
+
+    console.log(req.body);
+    
+    
+    try {
+        const { categoryName, categoryCode , isActive} = req.body;
+>>>>>>> master
         
         if (!categoryName || !categoryCode) {
             return res.status(400).json({ message: "All fields are required!" });
@@ -52,8 +61,12 @@ const createCategory = async (req, res) => {
             categoryId,
             categoryName,
             categoryCode,
+<<<<<<< HEAD
             categoryColor,
             IsActive : categoryStatus === "Active" ? true : false
+=======
+            IsActive : isActive === "Active" ? true : false
+>>>>>>> master
         });
 
         await newCategory.save();
@@ -85,6 +98,7 @@ const getCategoryById = async (req, res) => {
 };
 
 //UPDATE CATEGORY IN DATABASE WHEN CLICK ON SAVE BUTTON
+<<<<<<< HEAD
 const editCategory = async (req, res) => {        
     try {
         const { categoryName } = req.body;
@@ -95,14 +109,32 @@ const editCategory = async (req, res) => {
         const updatedCategory = await Category.findOneAndUpdate(
             { categoryCode: categoryCode }, // Find category by code
             { categoryName: categoryName , categoryColor: categoryColor , IsActive : categoryStatus === "Active" ? true : false
+=======
+const editCategory = async (req, res) => {       
+    console.log(req.body , req.params);
+     
+    try {
+
+        const { categoryId } = req.params;
+        const { categoryName } = req.body;
+        const { categoryCode } =  req.body;
+        const { isActive } = req.body;
+        
+        const updatedCategory = await Category.findOneAndUpdate(
+            { categoryId: categoryId }, // Find category by code
+            { categoryName: categoryName ,categoryCode:categoryCode  , IsActive : isActive === "Active" ? true : false
+>>>>>>> master
              }, // Update with new data
             { new: true } // Return updated document
         );
         
+<<<<<<< HEAD
         if (!updatedCategory) {
             return res.status(404).json({ message: "Category not found" });
         }
 
+=======
+>>>>>>> master
         res.status(201).json({ message: "Category updated successfully!" });
 
         } 

@@ -10,6 +10,8 @@ import {
   faLayerGroup
 } from '@fortawesome/free-solid-svg-icons';
 import '../StyleSheets/ProductionPlanning.css'; // Adjust the path as necessary
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
 
 const ProductionPlanning = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
@@ -23,6 +25,8 @@ const ProductionPlanning = () => {
   const [demandId, setDemandid] = useState(null);
   const [findMainRecipe, setFindMainRecipe] = useState(null);
   const [findSemiFinishedRecipe, setFindSemiFinishedRecipe] = useState(null);
+  const MySwal = withReactContent(Swal);
+
 
   
 
@@ -89,16 +93,42 @@ const ProductionPlanning = () => {
   }, [selectedDate]);
 
   const toggleProductExpand = (productId, demandQuantity) => {
+      console.log(productId);
+      
+    if (expandedProduct === productId) {
+      setExpandedProduct(null);
+      setFindMainRecipe(null);
+      setExpandedSemiFinished(null);
+      return;
+    }
 
+  
     const matchedRecipe = recipeData.find(recipe => recipe.recipeCode === productId);
+
+    if(!matchedRecipe){
+      Swal.fire({
+        toast: true,
+        position: 'top',
+        icon: 'info',
+        background:"#292929",
+        color:"#ffffff",
+        title: 'Recipe Not Found',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+      });
+      return
+    }
   
     if (matchedRecipe) {
-      // Create a deep copy and calculate new required quantities
-      const updatedIngredients = matchedRecipe.ingredients.map(ingredient => ({
-        ...ingredient,
-        requiredQty: ingredient.requiredQty * demandQuantity,
-        shortage: Math.max((ingredient.requiredQty * demandQuantity) - ingredient.available, 0)
-      }));
+      const updatedIngredients = matchedRecipe.ingredients.map(ingredient => {
+        const requiredQty = ingredient.quantity * demandQuantity;
+        return {
+          ...ingredient,
+          requiredQty,
+          shortage: Math.max(requiredQty - ingredient.available, 0),
+        };
+      });
   
       setFindMainRecipe({
         ...matchedRecipe,
@@ -106,9 +136,10 @@ const ProductionPlanning = () => {
       });
     }
   
-    setExpandedProduct(expandedProduct === productId ? null : productId);
+    setExpandedProduct(productId);
     setExpandedSemiFinished(null);
   };
+  
 
   const toggleSemiFinishedExpand = (semiFinishedCode, quantityNeeded) => {
     console.log("semiFinishedCode:", semiFinishedCode);
@@ -135,88 +166,71 @@ const ProductionPlanning = () => {
     
   };
 
-  const finishGoodsDemand = demandData
-  .flatMap(demand => demand.items.filter(i => i.itemType === "FinishedGoods"))
-  .reduce((acc, item) => {
-    const existingItem = acc.find(i => i.itemCode === item.itemCode);
-    if (existingItem) {
-      existingItem.quantity += item.quantity;
+ // Group and sum items by itemCode
+function groupAndSumItems(items) {
+  const map = new Map();
+  for (const item of items) {
+    if (map.has(item.itemCode)) {
+      map.get(item.itemCode).quantity += item.quantity;
     } else {
-      acc.push({ ...item }); // Make a copy to avoid mutation
+      map.set(item.itemCode, { ...item }); // Clone to avoid mutation
     }
-    return acc;
-  }, []);
-
-  const semiFinishDemand = demandData
-  .flatMap(demand => demand.items.filter(i => i.itemType === "FinishedGoods")).map(item => {
-    const matchedRecipe = recipeData.find(recipe => recipe.recipeCode === item.itemCode);
-    if (matchedRecipe) {
-      const updatedIngredients = matchedRecipe.ingredients.map(ingredient => ({
-        ...ingredient,
-        requiredQty: ingredient.quantity * item.quantity,
-      }));
-      return updatedIngredients.filter(i => i.itemType === "SemiFinished").map(i => ({
-        ...i,
-        itemName: i.itemName,
-        quantity: i.requiredQty
-           }));
-    }
-    return [];
-  })
-  .flat()
-  .reduce((acc, item) => {
-    const existingItem = acc.find(i => i.itemCode === item.itemCode);
-    if (existingItem) {
-      existingItem.quantity += item.quantity;
-    } else {
-      acc.push({ ...item }); // Make a copy to avoid mutation
-    }
-    return acc;
-  }, []);
-  
-  
-  function getAllRawMaterials(recipeCode, multiplier = 1) {
-    const recipe = recipeData.find(r => r.recipeCode === recipeCode);
-    if (!recipe) return [];
-  
-    let materials = [];
-  
-    for (const ingredient of recipe.ingredients) {
-      const totalQty = ingredient.quantity * multiplier;
-  
-      if (ingredient.itemType === "RawMaterial") {
-        materials.push({
-          ...ingredient,
-          quantity: totalQty
-        });
-      } else if (ingredient.itemType === "SemiFinished" || ingredient.itemType === "SemiFinishedSemiFinished") {
-        // If it's a semi-finished, go deeper
-        const nestedMaterials = getAllRawMaterials(ingredient.itemCode, totalQty);
-        materials = materials.concat(nestedMaterials);
-      }
-    }
-  
-    return materials;
   }
-  
-  // Now process all FinishedGoods in demandData
-  const rawMaterialRequirements = demandData
-    .flatMap(demand => 
-      demand.items
-        .filter(item => item.itemType === "FinishedGoods")
-        .flatMap(item => getAllRawMaterials(item.itemCode, item.quantity))
-    )
-    .reduce((acc, item) => {
-      const existing = acc.find(i => i.itemCode === item.itemCode);
-      if (existing) {
-        existing.quantity += item.quantity;
-      } else {
-        acc.push({ ...item });
-      }
-      return acc;
-    }, []);
-  
-console.log("rawMaterialRequirements:", finishGoodsDemand);
+  return Array.from(map.values());
+}
+
+// Extract Finished Goods from demandData
+const finishedGoods = demandData.flatMap(demand =>
+  demand.items.filter(item => item.itemType === "FinishedGoods")
+);
+
+//  Finished Goods Demand
+const finishGoodsDemand = groupAndSumItems(finishedGoods);
+
+// Semi-Finished Demand Calculation
+const semiFinishDemand = groupAndSumItems(
+  finishedGoods.flatMap(fgItem => {
+    const recipe = recipeData.find(r => r.recipeCode === fgItem.itemCode);
+    if (!recipe) return [];
+
+    return recipe.ingredients
+      .filter(i => i.itemType === "SemiFinished")
+      .map(ingredient => ({
+        ...ingredient,
+        quantity: ingredient.quantity * fgItem.quantity
+      }));
+  })
+);
+
+// extract Raw Materials
+function getAllRawMaterials(recipeCode, multiplier = 1) {
+  const recipe = recipeData.find(r => r.recipeCode === recipeCode);
+  if (!recipe) return [];
+
+  let materials = [];
+
+  for (const ingredient of recipe.ingredients) {
+    const totalQty = ingredient.quantity * multiplier;
+
+    if (ingredient.itemType === "RawMaterial") {
+      materials.push({ ...ingredient, quantity: totalQty });
+    } else if (["SemiFinished", "SemiFinishedSemiFinished"].includes(ingredient.itemType)) {
+      materials.push(...getAllRawMaterials(ingredient.itemCode, totalQty));
+    }
+  }
+
+  return materials;
+}
+
+// Raw Material Requirements
+const rawMaterialRequirements = groupAndSumItems(
+  finishedGoods.flatMap(item => getAllRawMaterials(item.itemCode, item.quantity))
+);
+
+
+console.log("Finished Goods Demand:", finishGoodsDemand);
+console.log("Semi-Finished Demand:", semiFinishDemand);
+console.log("Raw Material Requirements:", rawMaterialRequirements);
 
 
   // const calculateTotalShortage = (type) => {
@@ -319,7 +333,7 @@ console.log("rawMaterialRequirements:", finishGoodsDemand);
               </div>
               
               <div className="summary-section">
-                <h4>Finished Materials</h4>
+                <h4>Semi-Finished Materials</h4>
                   {semiFinishDemand.map((item) => (
                 <div className="summary-items">
                   <div className="summary-item">
@@ -358,7 +372,7 @@ console.log("rawMaterialRequirements:", finishGoodsDemand);
                     </div>
                 </div>
 
-                {expandedProduct === findMainRecipe?.recipeCode && (
+              {expandedProduct === item.itemCode && findMainRecipe?.recipeCode === item.itemCode && (
                   <div className="ingredients-section">
                     <div className="section-title">Ingredients Breakdown</div>
                     {/* Raw Materials Section */}

@@ -53,9 +53,13 @@ const customSelectStyles = {
     }),
   };
 
+<<<<<<< HEAD
 const options = [
 
 ];
+=======
+const options = [];
+>>>>>>> master
 
 try{
     const response  = await fetch('http://localhost:3000/items/api/')
