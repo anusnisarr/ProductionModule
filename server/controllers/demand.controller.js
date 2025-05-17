@@ -1,4 +1,4 @@
-import Demand from "../models/Demand.models.js"; // Assuming you have a Demand model
+import Demand from "../models/demand.models.js"; // Assuming you have a Demand model
 import Item from "../models/item.models.js";
 
 let demandNo = null
