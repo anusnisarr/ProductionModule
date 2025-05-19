@@ -14,8 +14,7 @@ const Items = () => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [isLoading, setIsLoading] = useState(true);
-    const MySwal = withReactContent(Swal);
-    
+    const MySwal = withReactContent(Swal);    
 
     useEffect(() => {
         fetchItems();
@@ -243,6 +242,7 @@ const Items = () => {
                                                 to={`/Items/Edit/${item.itemId}`}
                                                 className="btn-icon"
                                                 title="Edit"
+                                                state={{ item }}
                                             >
                                                 <FontAwesomeIcon icon={faEdit} />
                                             </Link>

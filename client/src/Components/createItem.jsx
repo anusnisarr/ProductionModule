@@ -2,13 +2,19 @@ import React, { useState, useEffect, useRef } from "react";
 import "../StyleSheets/createItem.css";
 import Choices from "choices.js";
 import 'choices.js/public/assets/styles/choices.min.css';
-import { useParams } from 'react-router-dom';
+import { useParams , useLocation  } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
  
 const CreateOrEditItem = () => {
-  const itemId  = useParams();
-  const navigate = useNavigate();
+  const { itemId }  = useParams();
+  const location = useLocation();
 
+  const isEditMode = !!itemId
+
+  const preLoadedItemData = location.state?.item
+
+
+  const navigate = useNavigate();
   const [activeCategories, setActiveCategories] = useState([]);
   const [selectedCategoryCode, setSelectedCategoryCode] = useState("");
   const [selectedCategoryName, setSelectedCategoryName] = useState("");
@@ -20,15 +26,23 @@ const CreateOrEditItem = () => {
     itemType: "RawMaterial",
   });
   const selectRef = useRef(null);
-  const isEditMode = window.location.href.includes("Edit");
 
 
   useEffect(() => {
     if(!isEditMode) {
       fetchCategoriesForItem();
     }
-    if (isEditMode) {
-      fetchItemDetails();
+    if (isEditMode && !preLoadedItemData) {
+      handleItemDetails();
+    }
+    if (isEditMode && preLoadedItemData) {
+      setPreLoadedItemDataOnEdit(preLoadedItemData);
+
+      fetch("http://localhost:3000/categories/api/categories")
+        .then(res => res.json())
+        .then(data => {
+          populateCategoriesWithSelection(data, preLoadedItemData.categoryCode);
+        });
     }
   }, []);
 
@@ -70,7 +84,20 @@ const CreateOrEditItem = () => {
     }
   };
 
-  const fetchItemDetails = async () => { 
+  const setPreLoadedItemDataOnEdit = (item) => {
+    setItemData({
+      itemName: item.itemName,
+      itemCode: item.itemCode,
+      itemPrice: item.itemPrice,
+      isActive: item.isActive ? "Active" : "Inactive",
+      itemType: item.itemType,
+    });
+
+    setSelectedCategoryCode(item.categoryCode);
+    setSelectedCategoryName(item.categoryName);
+  }
+
+  const handleItemDetails = async (itemRes , categoryRes) => { 
     try {
       const itemCodeParam = window.location.pathname.split("/").pop();
   
