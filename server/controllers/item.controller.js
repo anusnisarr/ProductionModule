@@ -130,8 +130,6 @@ const uploadFile = async (req, res) => {
 
     console.log(jsonData);
     
-
-
     // Insert only new users based on unique field (like email)
     for (const item of jsonData) {
 
@@ -153,7 +151,7 @@ const uploadFile = async (req, res) => {
             console.log(newItem);
         }
     
-    throw new Error("Item Code Already Exist!");
+    throw new Error(`Item Code: ${exists.itemCode} Already Exist!`);
 
     }
 
