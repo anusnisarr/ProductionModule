@@ -1,8 +1,10 @@
 import { uploadFileToCloudinary } from "../utils/cloudinaryUpload.js";
 import Item from "../models/item.models.js";
+import Category from  "../models/category.models.js";
 import dotenv from "dotenv";
 import fs from "fs";
 import XLSX from 'xlsx';
+import mongoose from 'mongoose';
 dotenv.config();
 let itemIdAssign = null;
 
@@ -114,61 +116,92 @@ const createNewItem = async (req, res) => {
 };
 
 //  UPLOAD ITEM THROUGH EXCEL FILE IMPORT 
+
 const uploadFile = async (req, res) => {
-  try {
     const filePath = req.file.path;
-
-    // Read the workbook
-    const workbook = XLSX.readFile(filePath);
-
-    // Read first sheet
-    const sheetName = workbook.SheetNames[0];
-    const sheet = workbook.Sheets[sheetName];
-
-    // Convert to JSON
-    const jsonData = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-
-    console.log(jsonData);
     
-    // Insert only new users based on unique field (like email)
-    for (const item of jsonData) {
+    try {
+        // Read the workbook
+        const workbook = XLSX.readFile(filePath);
 
-        const exists = await Item.findOne({ itemCode: item.ItemCode });
-        if (!exists) {
-            await itemIdCount() 
-            const newItem = new Item({
-                itemId : await itemIdAssign,
-                itemName: item.ItemName,
-                itemCode:item.ItemCode,
-                itemPrice:item.ItemPrice,
-                categoryCode:null,
-                categoryName:item.Category,
-                itemImageURL:null,
-                itemType:item.ItemType,
-                isActive: item.Status.toLowerCase() === "active" ? true : false
-            })
-            await newItem.save()
-            console.log(newItem);
+        // Read first sheet
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+
+        // Convert to JSON
+        const jsonData = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+        console.log("SheetData", jsonData);
+        
+        const session = await mongoose.startSession();
+        
+        try {
+
+            session.startTransaction();
+            
+            // Validate all items before insertion
+            for (const item of jsonData) {
+                
+                const exists = await Item.findOne({ itemCode: item.ItemCode }).session(session);
+                if (exists) {
+                    throw new Error(`Item Code: ${item.ItemCode} Already Exists!`);
+                }
+                
+                const categoryData = await Category.findOne({ categoryName: item.Category }).session(session);
+                if (!categoryData) {
+                    throw new Error(`Category: ${item.Category} not found!`);
+                }
+            }
+            
+            const newItems = [];
+            
+            for (const item of jsonData) {
+                await itemIdCount();
+                
+                const categoryData = await Category.findOne({ categoryName: item.Category }).session(session);
+                
+                const newItem = new Item({
+                    itemId: await itemIdAssign,
+                    itemName: item.ItemName,
+                    itemCode: item.ItemCode,
+                    itemPrice: item.ItemPrice,
+                    categoryCode: categoryData.categoryCode,
+                    categoryName: item.Category,
+                    itemImageURL: null,
+                    itemType: item.ItemType,
+                    isActive: item.Status.toLowerCase() === "active" ? true : false
+                });
+                
+                await newItem.save({ session });
+                newItems.push(newItem);
+            }
+            
+            // Commit the transaction if everything is successful
+            await session.commitTransaction();
+            session.endSession();
+            
+            fs.unlinkSync(filePath);
+            
+            return res.status(200).json({ success: true, data: jsonData });
+            
+        } catch (error) {
+            await session.abortTransaction();
+            session.endSession();
+            throw error; 
         }
-    
-    throw new Error(`Item Code: ${exists.itemCode} Already Exist!`);
-
+        
+    } catch (error) {
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+        
+        console.log(error);
+        return res.status(500).json({ 
+            success: false, 
+            message: error.message || String(error),
+            error: 'Error processing file' 
+        });
     }
-
-    // Optional: delete file after reading
-    fs.unlinkSync(filePath);
-
-    // Return the data
-    return res.status(200).json({ success: true, data: jsonData });
-
-  } catch (error) {
-    console.log(error);
-    return  res.status(500).json({ success: false, message: error.message || String(error),  
-    error: 'Error processing file',
-    });
-    fs.unlinkSync(filePath);
-
-  }
 };
 
  //UPDATE CATEGORY IN DATABASE WHEN CLICK ON SAVE BUTTON

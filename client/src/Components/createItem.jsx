@@ -13,7 +13,6 @@ const CreateOrEditItem = () => {
 
   const preLoadedItemData = location.state?.item
 
-
   const navigate = useNavigate();
   const [activeCategories, setActiveCategories] = useState([]);
   const [selectedCategoryCode, setSelectedCategoryCode] = useState("");
@@ -25,6 +24,7 @@ const CreateOrEditItem = () => {
     isActive: "Active",
     itemType: "RawMaterial",
   });
+
   const selectRef = useRef(null);
 
 
@@ -32,9 +32,7 @@ const CreateOrEditItem = () => {
     if(!isEditMode) {
       fetchCategoriesForItem();
     }
-    if (isEditMode && !preLoadedItemData) {
-      handleItemDetails();
-    }
+
     if (isEditMode && preLoadedItemData) {
       setPreLoadedItemDataOnEdit(preLoadedItemData);
 
@@ -44,6 +42,11 @@ const CreateOrEditItem = () => {
           populateCategoriesWithSelection(data, preLoadedItemData.categoryCode);
         });
     }
+
+    if (isEditMode && !preLoadedItemData) {
+      handleItemDetails();
+    }
+    
   }, []);
 
   const fetchCategoriesForItem = async () => {
@@ -64,6 +67,7 @@ const CreateOrEditItem = () => {
       console.error("❌ Fetch error:", error);
   };
   }
+
   const populateCategories = (categories) => {    
     const choicesArray = categories.map((category) => ({
       value: category.categoryCode,

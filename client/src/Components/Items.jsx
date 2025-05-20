@@ -49,18 +49,47 @@ const Items = () => {
     };
 
     const handleDelete = async (itemCode) => {
-        if (!window.confirm("Are you sure you want to delete this item?")) return;
-
-        try {
-            const response = await fetch(`http://localhost:3000/items/delete/${itemCode}`, { method: "DELETE" });
-            if (!response.ok) throw new Error(await response.json().message || "Cannot delete this item");
+        const result = await Swal.fire({
+          title: "Are you sure?",
+          text: "You won't be able to revert this!",
+          icon: "warning",
+          iconColor: "#d33",
+          showCancelButton: true,
+          background:"#252525",
+          color:"#dbdbdc",
+          confirmButtonColor: "#4caf50",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Yes, delete it!"
+        });
+      
+        if (result.isConfirmed) {
+          try {
+            const response = await fetch(`http://localhost:3000/items/delete/${itemCode}`, {
+              method: "DELETE"
+            });
+      
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.message || "Cannot delete this item");
+            }
+      
             setItemsArray(prev => prev.filter(item => item.itemCode !== itemCode));
-        } catch (error) {
+      
+            await Swal.fire({
+              title: "Deleted!",
+              text: `Item ${itemCode} has been deleted.`,
+              icon: "success",
+              background:"#252525",
+              color:"#dbdbdc",
+              iconColor: "#4caf50"
+            });
+          } catch (error) {
             console.error("Error:", error);
             alert(`Delete failed: ${error.message}`);
+          }
         }
-    };
-
+      };
+      
     const handleFileImport = async (event) => {
         const file = event.target.files[0];
         if (!file) return;
@@ -71,8 +100,8 @@ const Items = () => {
         try {
             const formData = new FormData();
             formData.append("file", file);
-            console.log(formData)
-            
+            console.log("file" , file)
+
             const response = await fetch("http://localhost:3000/items/upload", {
                 method: "POST",
                 body: formData
